@@ -64,7 +64,6 @@ class UsuariosController extends Controller{
     public function store(StoreUserRequest $request){
         Gate::authorize('create', User::class);
         $validated = $request->validated();
-        $validated['nacimiento'] = Carbon::createFromFormat('d/m/Y', $validated['nacimiento'])->format('Y-m-d');
         $validated['password'] = Hash::make($validated['password']);
         $validated['restablecimiento'] = 0;
         $user = User::create($validated);

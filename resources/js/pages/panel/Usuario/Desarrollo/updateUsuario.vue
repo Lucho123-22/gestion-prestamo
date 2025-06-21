@@ -201,7 +201,7 @@ onMounted(() => {
             <div class="grid grid-cols-12 gap-4">
                 <div class="col-span-9">
                     <label for="dni" class="block font-bold mb-3">DNI <span class="text-red-500">*</span></label>
-                    <InputText v-model="user.dni" maxlength="8" required @keyup.enter="buscarPorDni" fluid />
+                    <InputText v-model="user.dni" maxlength="8" required @keyup.enter="buscarPorDni" fluid disabled/>
                 </div>
                 <div class="col-span-3">
                     <label for="status" class="block font-bold mb-2">Estado <span class="text-red-500">*</span></label>

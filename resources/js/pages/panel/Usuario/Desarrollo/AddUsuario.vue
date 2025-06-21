@@ -60,11 +60,21 @@
                 <div class="col-span-6">
                     <label for="nacimiento" class="block font-bold mb-3">Fecha de nacimiento <span
                             class="text-red-500">*</span></label>
-                    <InputText v-model="usuario.nacimiento" required maxlength="100" disabled fluid />
-                    <small v-if="submitted && !usuario.nacimiento" class="text-red-500">Los apellidos son
-                        obligatorios.</small>
-                    <small v-else-if="serverErrors.nacimiento" class="text-red-500">{{ serverErrors.nacimiento[0]
-                    }}</small>
+                    <DatePicker
+                        v-model="usuario.nacimiento"
+                        inputId="nacimiento"
+                        dateFormat="dd/mm/yy"
+                        showIcon
+                        class="w-full"
+                        placeholder="Selecciona la fecha"
+                        fluid
+                    />
+                    <small v-if="submitted && !usuario.nacimiento" class="text-red-500">
+                        La fecha de nacimiento es obligatoria.
+                    </small>
+                    <small v-else-if="serverErrors.nacimiento" class="text-red-500">
+                        {{ serverErrors.nacimiento[0] }}
+                    </small>
                 </div>
                 <div class="col-span-6">
                     <label for="username" class="block font-bold mb-3">Usuario <span
@@ -114,7 +124,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import axios from 'axios';
 import Dialog from 'primevue/dialog';
 import Toolbar from 'primevue/toolbar';
@@ -126,6 +136,9 @@ import Password from 'primevue/password';
 import { useToast } from 'primevue/usetoast';
 import { defineEmits } from 'vue';
 import Select from 'primevue/select';
+import DatePicker from 'primevue/datepicker';
+
+let ultimoDniConsultado = '';
 
 const toast = useToast();
 const roles = ref([]);
@@ -162,17 +175,16 @@ function consultarusuarioPorDNI() {
         axios.get(`/consulta/${dni}`)
             .then(response => {
                 const data = response.data;
-                if (data.success && data.data) {
-                    const name = data.data.nombres || '';
-                    const apellido_paterno = data.data.apellido_paterno || '';
-                    const apellido_materno = data.data.apellido_materno || '';
-                    const nacimiento = data.data.fecha_nacimiento || '';
+                if (data && data.nombres) {
+                    const name = data.nombres || '';
+                    const apellido_paterno = data.apellidoPaterno || '';
+                    const apellido_materno = data.apellidoMaterno || '';
 
                     usuario.value.name = name;
                     usuario.value.apellidos = `${apellido_paterno} ${apellido_materno}`.trim();
-                    usuario.value.nacimiento = nacimiento;
+                    usuario.value.nacimiento = ''; // Vacío porque no lo recibes
 
-                    usuario.value.username = generarUsername(name, apellido_paterno, apellido_materno, nacimiento);
+                    usuario.value.username = generarUsername(name, apellido_paterno, apellido_materno, '');
                 } else {
                     toast.add({ severity: 'warn', summary: 'No encontrado', detail: 'No se encontraron datos para este DNI', life: 3000 });
                 }
@@ -193,17 +205,36 @@ function generarUsername(nombre, apellidoPaterno, apellidoMaterno, nacimiento) {
             .toLowerCase() || '';
     };
 
-    const primeraLetraNombre = normalizar(nombre)?.charAt(0);
-    const primerApellido = normalizar(apellidoPaterno)?.split(' ')[0];
-    const segundoApellido = normalizar(apellidoMaterno)?.split(' ')[0]?.substring(0, 2);
-    const diaNacimiento = nacimiento?.split('/')?.[0]?.padStart(2, '0') || '00';
+    const primeraLetraNombre = normalizar(nombre)?.charAt(0) || '';
+    const primerApellido = normalizar(apellidoPaterno)?.split(' ')[0] || '';
+    const segundoApellido = normalizar(apellidoMaterno)?.split(' ')[0]?.substring(0, 2) || '';
+
+    // Convertir objeto Date a "dd"
+    let diaNacimiento = '00';
+    if (nacimiento instanceof Date && !isNaN(nacimiento.getTime())) {
+        diaNacimiento = String(nacimiento.getDate()).padStart(2, '0');
+    }
 
     return `${primeraLetraNombre}${primerApellido}${segundoApellido}${diaNacimiento}`.toUpperCase();
 }
+watch(() => usuario.value.nacimiento, (nuevaFecha) => {
+    if (nuevaFecha && usuario.value.name && usuario.value.apellidos) {
+        const [apellidoPaterno, apellidoMaterno] = usuario.value.apellidos.split(' ');
+        usuario.value.username = generarUsername(usuario.value.name, apellidoPaterno, apellidoMaterno, nuevaFecha);
+    }
+});
+
 
 function guardarUsuario() {
     submitted.value = true;
     serverErrors.value = {};
+
+    if (usuario.value.nacimiento instanceof Date) {
+        const year = usuario.value.nacimiento.getFullYear();
+        const month = String(usuario.value.nacimiento.getMonth() + 1).padStart(2, '0');
+        const day = String(usuario.value.nacimiento.getDate()).padStart(2, '0');
+        usuario.value.nacimiento = `${year}-${month}-${day}`;
+    }
 
     axios.post('/usuarios', usuario.value)
         .then(response => {
@@ -234,5 +265,11 @@ onMounted(() => {
         .catch(() => {
             toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los roles', life: 3000 });
         });
+});
+watch(() => usuario.value.dni, (nuevoDni) => {
+    if (nuevoDni.length === 8 && nuevoDni !== ultimoDniConsultado) {
+        ultimoDniConsultado = nuevoDni;
+        consultarusuarioPorDNI();
+    }
 });
 </script>

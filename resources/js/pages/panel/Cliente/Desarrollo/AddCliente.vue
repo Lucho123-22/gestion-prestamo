@@ -321,6 +321,7 @@ const formatSize = (bytes) => {
 
     return `${formattedSize} ${sizes[i]}`;
 };
+
 function consultarClientePorDNI(dni) {
     if (!/^\d{8}$/.test(dni)) return;
 
@@ -331,7 +332,7 @@ function consultarClientePorDNI(dni) {
             if (data && data.nombres && data.apellidoPaterno && data.apellidoMaterno) {
                 cliente.value.nombre = data.nombres;
                 cliente.value.apellidos = `${data.apellidoPaterno} ${data.apellidoMaterno}`.trim();
-                cliente.value.direccion = ''; // No viene en la respuesta
+                cliente.value.direccion = '';
             } else {
                 toast.add({ severity: 'warn', summary: 'Advertencia', detail: 'No se encontraron datos para este DNI.', life: 3000 });
             }
