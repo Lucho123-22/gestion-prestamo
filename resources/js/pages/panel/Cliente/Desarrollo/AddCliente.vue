@@ -20,9 +20,15 @@
 
             <div>
                 <label for="dni" class="block font-bold mb-3">DNI <span class="text-red-500">*</span></label>
-                <InputText id="dni" v-model.trim="cliente.dni" required="true" autofocus
-                    :invalid="(submitted && !cliente.dni) || serverErrors.dni" maxlength="8" fluid
-                    @keydown="consultarClientePorDNI" />
+                <InputText
+                    id="dni"
+                    v-model.trim="cliente.dni"
+                    required
+                    autofocus
+                    :invalid="(submitted && !cliente.dni) || serverErrors.dni"
+                    maxlength="8"
+                    fluid
+                />
                 <small v-if="submitted && !cliente.dni" class="text-red-500">El DNI es obligatorio.</small>
                 <small v-else-if="submitted && cliente.dni && cliente.dni.length !== 8" class="text-red-500">El DNI debe
                     tener 8 dígitos.</small>
@@ -55,7 +61,7 @@
                 <label for="direccion" class="block font-bold mb-3">Dirección <span
                         class="text-red-500">*</span></label>
                 <Textarea id="direccion" v-model="cliente.direccion" required="true" rows="3" cols="20"
-                    :invalid="submitted && !cliente.direccion" maxlength="255" fluid disabled />
+                    :invalid="submitted && !cliente.direccion" maxlength="255" fluid />
                 <small v-if="submitted && !cliente.direccion" class="text-red-500">La dirección es obligatoria.</small>
                 <small v-else-if="serverErrors.direccion" class="text-red-500">{{ serverErrors.direccion[0] }}</small>
             </div>
@@ -175,7 +181,7 @@
     </Dialog>
 </template>
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import axios from 'axios';
 import Dialog from 'primevue/dialog';
 import Textarea from 'primevue/textarea';
@@ -195,6 +201,7 @@ const cliente = ref({});
 const submitted = ref(false);
 const serverErrors = ref({});
 const estadoTipoClienteOptions = ref([]);
+let ultimoDniConsultado = '';
 
 const emit = defineEmits(['cliente-agregado']);
 function openNew() {
@@ -314,25 +321,27 @@ const formatSize = (bytes) => {
 
     return `${formattedSize} ${sizes[i]}`;
 };
-function consultarClientePorDNI(event) {
-    if (event.key === 'Enter' && cliente.value.dni.length === 8) {
-        axios.get(`/consulta/${cliente.value.dni}`)
-            .then(response => {
-                const data = response.data;
-                if (data.success && data.data) {
-                    cliente.value.nombre = data.data.nombres || '';
-                    cliente.value.apellidos = `${data.data.apellido_paterno || ''} ${data.data.apellido_materno || ''}`.trim();
-                    cliente.value.direccion = data.data.direccion_completa || '';
-                } else {
-                    toast.add({ severity: 'warn', summary: 'Advertencia', detail: 'No se encontraron datos para este DNI.', life: 3000 });
-                }
-            })
-            .catch(error => {
-                console.error(error);
-                toast.add({ severity: 'error', summary: 'Error', detail: 'Error al consultar el DNI.', life: 3000 });
-            });
-    }
+function consultarClientePorDNI(dni) {
+    if (!/^\d{8}$/.test(dni)) return;
+
+    axios.get(`/consulta/${dni}`)
+        .then(response => {
+            const data = response.data;
+
+            if (data && data.nombres && data.apellidoPaterno && data.apellidoMaterno) {
+                cliente.value.nombre = data.nombres;
+                cliente.value.apellidos = `${data.apellidoPaterno} ${data.apellidoMaterno}`.trim();
+                cliente.value.direccion = ''; // No viene en la respuesta
+            } else {
+                toast.add({ severity: 'warn', summary: 'Advertencia', detail: 'No se encontraron datos para este DNI.', life: 3000 });
+            }
+        })
+        .catch(error => {
+            console.error(error);
+            toast.add({ severity: 'error', summary: 'Error', detail: 'Error al consultar el DNI.', life: 3000 });
+        });
 }
+
 onMounted(async () => {
     try {
         const response = await axios.get('/cliente/tipos');
@@ -344,4 +353,11 @@ onMounted(async () => {
         console.error('Error al cargar tipos de cliente:', error);
     }
 });
+watch(() => cliente.value.dni, (newDni) => {
+    if (newDni.length === 8 && newDni !== ultimoDniConsultado) {
+        ultimoDniConsultado = newDni;
+        consultarClientePorDNI(newDni);
+    }
+});
+
 </script>
