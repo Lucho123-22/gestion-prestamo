@@ -10,7 +10,7 @@ class ConsultasDni extends Controller{
         if (empty($dni)) {
             return response()->json(['error' => 'Debe proporcionar un DNI válido'], 400);
         }
-        $token = 'apis-token-15770.RizHsWztB8Se3VTQTjlVBG2tOPUnUsBL';
+        $token = '7375|8GsDmhP9SfiDFSGCZ9gjKh5TUX5RRxnX5ZUWDLFS';
         $curl = curl_init();
         curl_setopt_array($curl, [
             CURLOPT_URL => 'https://apis.aqpfact.pe/api/dni/' . $dni,
