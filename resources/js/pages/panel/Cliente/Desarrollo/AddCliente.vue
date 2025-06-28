@@ -55,7 +55,7 @@
                 <label for="direccion" class="block font-bold mb-3">Dirección <span
                         class="text-red-500">*</span></label>
                 <Textarea id="direccion" v-model="cliente.direccion" required="true" rows="3" cols="20"
-                    :invalid="submitted && !cliente.direccion" maxlength="255" fluid disabled />
+                    :invalid="submitted && !cliente.direccion" maxlength="255" fluid />
                 <small v-if="submitted && !cliente.direccion" class="text-red-500">La dirección es obligatoria.</small>
                 <small v-else-if="serverErrors.direccion" class="text-red-500">{{ serverErrors.direccion[0] }}</small>
             </div>
