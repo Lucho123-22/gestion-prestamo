@@ -331,7 +331,7 @@ const aplicarCambios = async () => {
                     <label for="fecha_vencimiento" class="block font-bold mb-3">Dias <span
                             class="text-red-500">*</span></label>
                     <InputNumber v-model="value3" inputId="withoutgrouping" :useGrouping="false" fluid
-                        :readonly="true" />
+                         />
                 </div>
             </div>
 
