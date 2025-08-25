@@ -32,7 +32,7 @@
             <div>
                 <label for="nombre" class="block font-bold mb-3">Nombres <span class="text-red-500">*</span></label>
                 <InputText id="nombre" v-model.trim="cliente.nombre" required="true"
-                    :invalid="submitted && !cliente.nombre" maxlength="100" fluid disabled />
+                    :invalid="submitted && !cliente.nombre" maxlength="100" fluid/>
                 <small v-if="submitted && !cliente.nombre" class="text-red-500">El nombre es obligatorio.</small>
                 <small v-else-if="submitted && cliente.nombre && cliente.nombre.length < 2" class="text-red-500">El
                     nombre
@@ -43,7 +43,7 @@
                 <label for="apellidos" class="block font-bold mb-3">Apellidos <span
                         class="text-red-500">*</span></label>
                 <InputText id="apellidos" v-model.trim="cliente.apellidos" required="true"
-                    :invalid="submitted && !cliente.apellidos" maxlength="100" fluid disabled />
+                    :invalid="submitted && !cliente.apellidos" maxlength="100" fluid/>
                 <small v-if="submitted && !cliente.apellidos" class="text-red-500">Los apellidos son
                     obligatorios.</small>
                 <small v-else-if="submitted && cliente.apellidos && cliente.apellidos.length < 2"
@@ -92,7 +92,7 @@
                 }}</small>
             </div>
             <div>
-                <label for="foto" class="block font-bold mb-3">Foto <span class="text-red-500">*</span></label>
+                <label for="foto" class="block font-bold mb-3">Foto</label>
                 <FileUpload name="foto" url="/api/upload" @upload="onTemplatedUpload($event)" :multiple="false"
                     accept="image/jpeg,image/jpg,image/png" :maxFileSize="2097152" @select="onSelectedFiles">
                     <template #header="{ chooseCallback, uploadCallback, clearCallback, files }">
