@@ -48,7 +48,16 @@
                 <div class="col-span-6">
                     <label for="interesdiario" class="block font-bold mb-3">Tasa de interes diario (%) <span
                             class="text-red-500">*</span></label>
-                    <InputNumber v-model="prestamo.tasa_interes_diario" prefix="%" integeronly fluid />
+                    <div class="flex align-items-center gap-2">
+                    <input 
+                        v-model.number="prestamo.tasa_interes_diario"
+                        type="number"
+                        step="0.0001"
+                        min="0"
+                        placeholder="0.00"
+                        class="p-inputtext p-component"
+                    />
+                    </div>
                 </div>
             </div>
             <div>
