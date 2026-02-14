@@ -21,8 +21,6 @@ class ProximosVencerController extends Controller
             });
         }
 
-        return ProximaVencerResource::collection(
-            $query->paginate(20)
-        );
+        return ProximaVencerResource::collection($query->get());
     }
 }
