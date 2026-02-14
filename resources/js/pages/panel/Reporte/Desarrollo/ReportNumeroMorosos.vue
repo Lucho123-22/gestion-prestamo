@@ -41,7 +41,7 @@ const totalMorosos = ref(0);
 const loadData = async () => {
     try {
         loading.value = true;
-        const response = await axios.get('/api/morosos');
+        const response = await axios.get('/morosos');
         cuotasMorosas.value = response.data.data;
         totalMorosos.value = response.data.data.length;
         error.value = null;
@@ -76,7 +76,6 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="card">
         <Message v-if="error" severity="error" :closable="false">
             {{ error }}
         </Message>
@@ -187,5 +186,4 @@ onMounted(() => {
                 </Column>
             </DataTable>
         </div>
-    </div>
 </template>

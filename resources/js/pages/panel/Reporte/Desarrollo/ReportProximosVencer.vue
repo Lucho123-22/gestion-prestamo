@@ -78,7 +78,6 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="card">
         <Message v-if="error" severity="error" :closable="false">
             {{ error }}
         </Message>
@@ -195,5 +194,4 @@ onMounted(() => {
                 </Column>
             </DataTable>
         </div>
-    </div>
 </template>

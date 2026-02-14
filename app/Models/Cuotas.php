@@ -47,12 +47,9 @@ class Cuotas extends Model{
         return $this->hasMany(Pagos::class);
     }
     public function scopePendientes($query){
-        return $query->where('estado', 'Pendiente');
-    }
-    public function scopeMorosas($query){
         return $query->where('estado', 'Pendiente')
             ->whereNotNull('fecha_inicio')
-            ->where('fecha_inicio', '<=', now()->subDays(30));
+            ->where('fecha_inicio', '>', now()->subDays(30));
     }
     public function scopeProximasAVencer($query){
         return $query->where('estado', 'Pendiente')
@@ -61,5 +58,10 @@ class Cuotas extends Model{
                 now()->subDays(29),
                 now()->subDays(16)
             ]);
+    }
+    public function scopeMorosas($query){
+        return $query->where('estado', 'Pendiente')
+            ->whereNotNull('fecha_inicio')
+            ->where('fecha_inicio', '<=', now()->subDays(30));
     }
 }

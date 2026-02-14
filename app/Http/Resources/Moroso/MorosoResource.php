@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Resources\Moroso;
 
 use Illuminate\Http\Request;
@@ -10,7 +9,7 @@ class MorosoResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
-        $diasVencidos = Carbon::parse($this->fecha_inicio)
+        $diasVencidos = (int) Carbon::parse($this->fecha_inicio)
             ->diffInDays(now());
 
         return [
@@ -27,7 +26,7 @@ class MorosoResource extends JsonResource
             'saldo_capital' => $this->saldo_capital,
             'monto_interes_pagar' => $this->monto_interes_pagar,
             'total_deuda' => $this->saldo_capital + $this->monto_interes_pagar,
-            'dias_vencidos' => $diasVencidos,
+            'dias_vencidos' => $diasVencidos, // Ahora es int
             'fecha_inicio' => $this->fecha_inicio,
             'estado' => $this->estado,
         ];
