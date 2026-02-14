@@ -3,8 +3,10 @@
 use App\Http\Controllers\Api\ClienteController;
 use App\Http\Controllers\Api\ConsultasDni;
 use App\Http\Controllers\Api\CuotasController;
+use App\Http\Controllers\Api\MorososController;
 use App\Http\Controllers\Api\PagosController;
 use App\Http\Controllers\Api\PrestamosController;
+use App\Http\Controllers\Api\ProximosVencerController;
 use App\Http\Controllers\Api\ReporteController;
 use App\Http\Controllers\Api\RolesController;
 use App\Http\Controllers\Api\TipoClienteController;
@@ -41,6 +43,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/roles', [UsuarioWebController::class, 'roles'])->name('roles.view');
     Route::get('/tipos-clientes', [TipoClienteWebController::class, 'index'])->name('index.view');
 
+    Route::get('/morosos', [MorososController::class, 'index']);
+    Route::get('/proximos-vencer', [ProximosVencerController::class, 'index']);
     #TIPO CLIENTE => BACKEND
     Route::prefix('tipo-cliente')->group(function () {
         Route::get('/', [TipoClienteController::class, 'index'])->name('tipo-cliente.index');

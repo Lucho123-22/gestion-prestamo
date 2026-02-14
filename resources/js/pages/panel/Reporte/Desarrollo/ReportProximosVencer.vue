@@ -17,37 +17,39 @@ interface Cliente {
     telefono: string;
 }
 
-interface Moroso {
+interface ProximaVencer {
     prestamo_id: number;
-    referencia_prestamo: string;
-    cliente: Cliente;
+    prestamo_referencia: string;
+    cliente_id: number;
+    cliente_nombre: string;
+    cliente_telefono: string;
     cuota_id: number;
     numero_cuota: number;
-    capital: number;
     saldo_capital: number;
-    monto_interes_pagar: number;
+    interes_pendiente: number;
     total_deuda: number;
-    dias_vencidos: number;
+    dias_transcurridos: number;
+    dias_para_vencer: number;
     fecha_inicio: string;
     estado: string;
 }
 
-const cuotasMorosas = ref<Moroso[]>([]);
+const cuotasProximasVencer = ref<ProximaVencer[]>([]);
 const loading = ref(true);
 const error = ref<string | null>(null);
 const globalFilter = ref('');
-const totalMorosos = ref(0);
+const totalCuotas = ref(0);
 
 const loadData = async () => {
     try {
         loading.value = true;
-        const response = await axios.get('/api/morosos');
-        cuotasMorosas.value = response.data.data;
-        totalMorosos.value = response.data.data.length;
+        const response = await axios.get('/proximos-vencer');
+        cuotasProximasVencer.value = response.data.data;
+        totalCuotas.value = response.data.data.length;
         error.value = null;
     } catch (err: any) {
-        error.value = err.response?.data?.message || 'Error al cargar las cuotas morosas';
-        cuotasMorosas.value = [];
+        error.value = err.response?.data?.message || 'Error al cargar las cuotas próximas a vencer';
+        cuotasProximasVencer.value = [];
     } finally {
         loading.value = false;
     }
@@ -64,9 +66,9 @@ const formatCurrency = (value: number) => {
     }).format(value);
 };
 
-const getSeverityDiasVencidos = (dias: number) => {
-    if (dias >= 60) return 'danger';
-    if (dias >= 45) return 'warn';
+const getSeverityDias = (dias: number) => {
+    if (dias <= 5) return 'danger';
+    if (dias <= 10) return 'warn';
     return 'info';
 };
 
@@ -84,8 +86,8 @@ onMounted(() => {
         <div v-else>
             <div class="mb-4 flex justify-between items-center">
                 <div>
-                    <h3 class="text-xl font-semibold mb-2">Cuotas Morosas</h3>
-                    <p class="text-surface-500">Total: {{ totalMorosos }} cuotas vencidas (más de 30 días)</p>
+                    <h3 class="text-xl font-semibold mb-2">Cuotas Próximas a Vencer</h3>
+                    <p class="text-surface-500">Total: {{ totalCuotas }} cuotas entre 16-29 días</p>
                 </div>
                 <IconField>
                     <InputIcon>
@@ -99,9 +101,9 @@ onMounted(() => {
             </div>
 
             <DataTable 
-                :value="cuotasMorosas" 
+                :value="cuotasProximasVencer" 
                 :loading="loading"
-                :globalFilterFields="['cliente.nombre', 'referencia_prestamo', 'cliente.telefono']"
+                :globalFilterFields="['cliente_nombre', 'prestamo_referencia', 'cliente_telefono']"
                 :globalFilter="globalFilter"
                 paginator 
                 :rows="10"
@@ -112,29 +114,29 @@ onMounted(() => {
             >
                 <template #empty>
                     <div class="text-center p-4">
-                        <i class="pi pi-check-circle text-4xl text-green-500 mb-3"></i>
-                        <p class="text-surface-500">¡No hay cuotas morosas!</p>
+                        <i class="pi pi-inbox text-4xl text-surface-300 mb-3"></i>
+                        <p class="text-surface-500">No hay cuotas próximas a vencer</p>
                     </div>
                 </template>
 
-                <Column field="referencia_prestamo" header="Referencia" sortable style="min-width: 150px">
+                <Column field="prestamo_referencia" header="Referencia" sortable style="min-width: 150px">
                     <template #body="{ data }">
-                        <span class="font-semibold">{{ data.referencia_prestamo }}</span>
+                        <span class="font-semibold">{{ data.prestamo_referencia }}</span>
                     </template>
                 </Column>
 
-                <Column field="cliente.nombre" header="Cliente" sortable style="min-width: 200px">
+                <Column field="cliente_nombre" header="Cliente" sortable style="min-width: 200px">
                     <template #body="{ data }">
                         <div>
-                            <div class="font-semibold">{{ data.cliente.nombre }}</div>
-                            <div class="text-sm text-surface-500">{{ data.cliente.telefono }}</div>
+                            <div class="font-semibold">{{ data.cliente_nombre }}</div>
+                            <div class="text-sm text-surface-500">{{ data.cliente_telefono }}</div>
                         </div>
                     </template>
                 </Column>
 
                 <Column field="numero_cuota" header="Cuota" sortable style="min-width: 80px">
                     <template #body="{ data }">
-                        <Tag severity="danger">#{{ data.numero_cuota }}</Tag>
+                        <Tag severity="secondary">#{{ data.numero_cuota }}</Tag>
                     </template>
                 </Column>
 
@@ -144,31 +146,37 @@ onMounted(() => {
                     </template>
                 </Column>
 
-                <Column field="monto_interes_pagar" header="Interés" sortable style="min-width: 120px">
+                <Column field="interes_pendiente" header="Interés" sortable style="min-width: 120px">
                     <template #body="{ data }">
-                        {{ formatCurrency(data.monto_interes_pagar) }}
+                        {{ formatCurrency(data.interes_pendiente) }}
                     </template>
                 </Column>
 
                 <Column field="total_deuda" header="Total Deuda" sortable style="min-width: 130px">
                     <template #body="{ data }">
-                        <span class="font-bold text-red-600">{{ formatCurrency(data.total_deuda) }}</span>
+                        <span class="font-bold text-primary">{{ formatCurrency(data.total_deuda) }}</span>
                     </template>
                 </Column>
 
-                <Column field="dias_vencidos" header="Días Vencidos" sortable style="min-width: 130px" alignHeader="center">
+                <Column field="dias_transcurridos" header="Días Transcurridos" sortable style="min-width: 130px" alignHeader="center">
                     <template #body="{ data }">
                         <div class="text-center">
-                            <Tag :severity="getSeverityDiasVencidos(data.dias_vencidos)">
-                                {{ data.dias_vencidos }} días
+                            <Tag :severity="getSeverityDias(data.dias_para_vencer)">
+                                {{ data.dias_transcurridos }} días
                             </Tag>
                         </div>
                     </template>
                 </Column>
 
-                <Column field="fecha_inicio" header="Fecha Inicio" sortable style="min-width: 120px">
+                <Column field="dias_para_vencer" header="Días para Vencer" sortable style="min-width: 130px" alignHeader="center">
                     <template #body="{ data }">
-                        <span class="text-sm">{{ new Date(data.fecha_inicio).toLocaleDateString('es-PE') }}</span>
+                        <div class="text-center font-semibold" :class="{
+                            'text-red-600': data.dias_para_vencer <= 5,
+                            'text-orange-600': data.dias_para_vencer > 5 && data.dias_para_vencer <= 10,
+                            'text-blue-600': data.dias_para_vencer > 10
+                        }">
+                            {{ data.dias_para_vencer }} días
+                        </div>
                     </template>
                 </Column>
 
@@ -179,7 +187,7 @@ onMounted(() => {
                                 label="Ir a Pagar" 
                                 icon="pi pi-money-bill" 
                                 size="small"
-                                severity="danger"
+                                severity="success"
                                 @click="irAPagar(data.prestamo_id)"
                             />
                         </div>

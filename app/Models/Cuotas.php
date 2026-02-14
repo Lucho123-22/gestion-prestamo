@@ -42,12 +42,24 @@ class Cuotas extends Model{
     
     public function prestamo(){
         return $this->belongsTo(Prestamos::class, 'prestamo_id');
-    }    
+    }
     public function pagos(){
         return $this->hasMany(Pagos::class);
     }
     public function scopePendientes($query){
         return $query->where('estado', 'Pendiente');
     }
-
+    public function scopeMorosas($query){
+        return $query->where('estado', 'Pendiente')
+            ->whereNotNull('fecha_inicio')
+            ->where('fecha_inicio', '<=', now()->subDays(30));
+    }
+    public function scopeProximasAVencer($query){
+        return $query->where('estado', 'Pendiente')
+            ->whereNotNull('fecha_inicio')
+            ->whereBetween('fecha_inicio', [
+                now()->subDays(29),
+                now()->subDays(16)
+            ]);
+    }
 }

@@ -17,6 +17,7 @@ const activeTab = ref('0');
 const ReportInteresMensuales = shallowRef();
 const ReportNumeroClientes = shallowRef();
 const ReportNumeroMorosos = shallowRef();
+const ReportProximosVencer = shallowRef();
 
 onMounted(() => {
     setTimeout(() => {
@@ -33,6 +34,8 @@ const handleTabChange = (val: string | number) => {
         ReportNumeroClientes.value = markRaw(defineAsyncComponent(() => import('./Desarrollo/ReportNumeroClientes.vue')));
     } else if (val === '3' && !ReportNumeroMorosos.value) {
         ReportNumeroMorosos.value = markRaw(defineAsyncComponent(() => import('./Desarrollo/ReportNumeroMorosos.vue')));
+    } else if (val === '4' && !ReportProximosVencer.value) {
+        ReportProximosVencer.value = markRaw(defineAsyncComponent(() => import('./Desarrollo/ReportProximosVencer.vue')));
     }
 };
 </script>
@@ -71,7 +74,11 @@ const handleTabChange = (val: string | number) => {
                             <span class="font-bold whitespace-nowrap">Número de Clientes</span>
                         </Tab>
                         <Tab value="3" as="div" class="flex items-center gap-2">
-                            <span class="font-bold whitespace-nowrap">Número de Morosos</span>
+                            <span class="font-bold whitespace-nowrap">Morosos</span>
+                        </Tab>
+                        <Tab value="4" as="div" class="flex items-center gap-2">
+                            <i class="pi pi-clock"></i>
+                            <span class="font-bold whitespace-nowrap">Próximos a Vencer</span>
                         </Tab>
                     </TabList>
                     <TabPanels>
@@ -86,6 +93,9 @@ const handleTabChange = (val: string | number) => {
                         </TabPanel>
                         <TabPanel value="3">
                             <component :is="ReportNumeroMorosos" v-if="ReportNumeroMorosos" />
+                        </TabPanel>
+                        <TabPanel value="4">
+                            <component :is="ReportProximosVencer" v-if="ReportProximosVencer" />
                         </TabPanel>
                     </TabPanels>
                 </Tabs>
